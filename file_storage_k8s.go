@@ -45,7 +45,7 @@ func doListBlockVolumes(sess *session.Session) {
 			clustersSplitClean[0] = strings.Replace(clustersSplit[2], "\\", "", -1)
 			clustersSplitClean[1] = strings.Replace(clustersSplit[5], "\\", "", -1)
 			clustersSplitClean[2] = strings.Replace(clustersSplit[6], "\\", "", -1)
-			fmt.Println(counter, clustersSplitClean[0], clustersSplitClean[1], clustersSplitClean[2])
+			fmt.Println(counter, "ID:", *fileStorage.Id, clustersSplitClean[0], clustersSplitClean[1], clustersSplitClean[2])
 		}
 	}
 	//fmt.Println(string(jsonFormat))
