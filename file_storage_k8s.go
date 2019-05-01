@@ -31,12 +31,8 @@ func doListBlockVolumes(sess *session.Session) {
 	counter := 0
 	for _, fileStorage := range fileStorage {
 
-		//jsonFormat, jsonErr := json.Marshal(fileStorage)
 		notes, _ := json.Marshal(fileStorage.Notes)
-		//if jsonErr != nil {
-		//	fmt.Println(jsonErr)
-		//	return
-		//}
+
 		if strings.Contains(string(notes), "cluster") {
 			counter += 1
 			clusters := string(notes)
@@ -48,7 +44,5 @@ func doListBlockVolumes(sess *session.Session) {
 			fmt.Println(counter, "ID:", *fileStorage.Id, clustersSplitClean[0], clustersSplitClean[1], clustersSplitClean[2])
 		}
 	}
-	//fmt.Println(string(jsonFormat))
-	//fmt.Println("\n\n")
-	//fmt.Printf("\tID: %d -- Notes: %s\n", fileStorage.Id, fileStorage.Notes)
+
 }
