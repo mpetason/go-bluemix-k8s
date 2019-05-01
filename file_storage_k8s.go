@@ -37,10 +37,10 @@ func doListBlockVolumes(sess *session.Session) {
 			counter += 1
 			clusters := string(notes)
 			clustersSplit := strings.Split(clusters, ",")
-			var clustersSplitClean [3]string
-			clustersSplitClean[0] = strings.Replace(clustersSplit[2], "\\", "", -1)
-			clustersSplitClean[1] = strings.Replace(clustersSplit[5], "\\", "", -1)
-			clustersSplitClean[2] = strings.Replace(clustersSplit[6], "\\", "", -1)
+			var clustersSplitClean []string
+			clustersSplitClean = append(clustersSplitClean, strings.Replace(clustersSplit[2], "\\", "", -1),
+				strings.Replace(clustersSplit[5], "\\", "", -1),
+				strings.Replace(clustersSplit[6], "\\", "", -1))
 			fmt.Println(counter, "ID:", *fileStorage.Id, clustersSplitClean[0], clustersSplitClean[1], clustersSplitClean[2])
 		}
 	}
