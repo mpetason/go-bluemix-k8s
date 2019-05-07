@@ -16,7 +16,10 @@ import (
 
 func main() {
 	c := new(bluemix.Config)
-	flag.StringVar(&c.Region, "region", "", "The K8s Region")
+	flag.StringVar(&c.Region, "region", "", " au-syd, eu-de, eu-gb, us-east, us-south")
+
+	var allRegions bool
+	flag.BoolVar(&allRegions, "all", false, "All Regions")
 
 	var org string
 	flag.StringVar(&org, "org", "", "Bluemix Organization")
@@ -26,7 +29,7 @@ func main() {
 
 	flag.Parse()
 
-	if org == "" || space == "" {
+	if (org == "" || space == "") && (c.Region == "" && allRegions != true) {
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -67,26 +70,31 @@ func main() {
 		log.Fatal(err)
 	}
 
-	target := v1.ClusterTargetHeader{
-		OrgID:     myorg.GUID,
-		SpaceID:   myspace.GUID,
-		AccountID: myAccount.GUID,
-		Region:    c.Region,
-	}
+	if allRegions == true {
+		allRegions := [5]string{"au-syd", "eu-de", "eu-gb", "us-east", "us-south"}
+		count := 0
+		for _, r := range allRegions {
+			target := v1.ClusterTargetHeader{
+				OrgID:     myorg.GUID,
+				SpaceID:   myspace.GUID,
+				AccountID: myAccount.GUID,
+				Region:    r,
+			}
 
-	clusterClient, err := v1.New(sess)
-	if err != nil {
-		log.Fatal(err)
-	}
-	clustersAPI := clusterClient.Clusters()
+			clusterClient, err := v1.New(sess)
+			if err != nil {
+				log.Fatal(err)
+			}
+			clustersAPI := clusterClient.Clusters()
 
-	out, err := clustersAPI.List(target)
-	if err != nil {
-		log.Fatal(err)
-	}
-	count := 0
-	for _, c := range out {
-		count++
-		fmt.Println(count, "[", c.DataCenter, "]", "[", c.OwnerEmail, "]", "[", c.Name, "]")
+			out, err := clustersAPI.List(target)
+			if err != nil {
+				log.Fatal(err)
+			}
+			for _, c := range out {
+				count++
+				fmt.Println(count, "[", c.DataCenter, "]", "[", c.OwnerEmail, "]", "[", c.Name, "]")
+			}
+		}
 	}
 }
