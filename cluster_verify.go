@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/IBM-Cloud/bluemix-go"
+
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
@@ -13,6 +15,9 @@ import (
 )
 
 func main() {
+	c := new(bluemix.Config)
+	flag.StringVar(&c.Region, "region", "", "The K8s Region")
+
 	var org string
 	flag.StringVar(&org, "org", "", "Bluemix Organization")
 
@@ -26,7 +31,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	sess, err := session.New()
+	sess, err := session.New(c)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,7 +62,7 @@ func main() {
 		log.Fatal(err)
 	}
 	accountAPI := accClient.Accounts()
-	myAccount, err := accountAPI.FindByOrg(myorg.GUID, "us-south")
+	myAccount, err := accountAPI.FindByOrg(myorg.GUID, region)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -66,6 +71,7 @@ func main() {
 		OrgID:     myorg.GUID,
 		SpaceID:   myspace.GUID,
 		AccountID: myAccount.GUID,
+		Region:    c.Region,
 	}
 
 	clusterClient, err := v1.New(sess)
@@ -74,9 +80,13 @@ func main() {
 	}
 	clustersAPI := clusterClient.Clusters()
 
-	out, err := clustersAPI.Find("200817dc73184aeb87f5fe795d2a9dca", target)
+	out, err := clustersAPI.List(target)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(out)
+	count := 0
+	for _, c := range out {
+		count++
+		fmt.Println(count, "[", c.DataCenter, "]", "[", c.OwnerEmail, "]", "[", c.Name, "]")
+	}
 }
