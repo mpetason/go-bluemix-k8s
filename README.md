@@ -1,2 +1,2 @@
 # go-bluemix
-Bluemix API with Go
+Associates File Storage with K8s clusters using the Softlayer and Bluemix APIs.
