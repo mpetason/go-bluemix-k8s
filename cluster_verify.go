@@ -70,31 +70,34 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var kubernetesRegions []string
 	if allRegions == true {
-		allRegions := [5]string{"au-syd", "eu-de", "eu-gb", "us-east", "us-south"}
-		count := 0
-		for _, r := range allRegions {
-			target := v1.ClusterTargetHeader{
-				OrgID:     myorg.GUID,
-				SpaceID:   myspace.GUID,
-				AccountID: myAccount.GUID,
-				Region:    r,
-			}
+		kubernetesRegions = []string{"au-syd", "eu-de", "eu-gb", "us-east", "us-south"}
+	} else {
+		kubernetesRegions = []string{c.Region}
+	}
+	clusterCount := 0
+	for _, r := range kubernetesRegions {
+		target := v1.ClusterTargetHeader{
+			OrgID:     myorg.GUID,
+			SpaceID:   myspace.GUID,
+			AccountID: myAccount.GUID,
+			Region:    r,
+		}
 
-			clusterClient, err := v1.New(sess)
-			if err != nil {
-				log.Fatal(err)
-			}
-			clustersAPI := clusterClient.Clusters()
+		clusterClient, err := v1.New(sess)
+		if err != nil {
+			log.Fatal(err)
+		}
+		clustersAPI := clusterClient.Clusters()
 
-			out, err := clustersAPI.List(target)
-			if err != nil {
-				log.Fatal(err)
-			}
-			for _, c := range out {
-				count++
-				fmt.Println(count, "[", c.DataCenter, "]", "[", c.OwnerEmail, "]", "[", c.Name, "]")
-			}
+		out, err := clustersAPI.List(target)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, c := range out {
+			clusterCount++
+			fmt.Println(clusterCount, "[", c.DataCenter, "]", "[", c.OwnerEmail, "]", "[", c.Name, "]")
 		}
 	}
 }
