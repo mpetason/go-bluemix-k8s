@@ -29,7 +29,7 @@ func main() {
 
 	flag.Parse()
 
-	if (org == "" || space == "") && (c.Region == "" && allRegions != true) {
+	if (org == "" || space == "") || (c.Region == "" && allRegions != true) {
 		flag.Usage()
 		os.Exit(1)
 	}
