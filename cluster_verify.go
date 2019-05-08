@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 
 	"github.com/IBM-Cloud/bluemix-go"
 
@@ -95,6 +96,9 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		sort.Slice(out, func(i, j int) bool {
+			return out[i].OwnerEmail < out[j].OwnerEmail
+		})
 		for _, c := range out {
 			clusterCount++
 			fmt.Println(clusterCount, "[", c.DataCenter, "]", "[", c.OwnerEmail, "]", "[", c.Name, "]")
