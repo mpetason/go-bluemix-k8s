@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
@@ -73,7 +74,7 @@ func main() {
 	softlayerSession := slSession.New(os.Getenv("SL_USERNAME"), os.Getenv("SL_APIKEY"))
 	clusterID := doListBlockVolumes(softlayerSession)
 
-	for _, cluster := range clusterID {
+	for cluster, storageID := range clusterID {
 		for _, r := range kubernetesRegions {
 			target := v1.ClusterTargetHeader{
 				OrgID:     myorg.GUID,
@@ -90,7 +91,11 @@ func main() {
 
 			out, err := clustersAPI.Find(cluster, target)
 			if err != nil {
-				fmt.Println("Invalid Cluster:", cluster)
+				if strings.Contains(err.Error(), "A0006") {
+					fmt.Println("Invalid Cluster:", cluster, "- Storage ID:", storageID)
+				} else {
+					fmt.Println(err)
+				}
 			} else {
 				fmt.Println(out)
 			}
@@ -98,7 +103,7 @@ func main() {
 	}
 }
 
-func doListBlockVolumes(sess *slSession.Session) []string {
+func doListBlockVolumes(sess *slSession.Session) map[string][]string {
 	// Get the Account service for Block Storage
 	service := services.GetAccountService(sess)
 
@@ -106,7 +111,7 @@ func doListBlockVolumes(sess *slSession.Session) []string {
 	fileStorage, err := service.Limit(500).GetNetworkStorage()
 
 	// Create slice to return
-	storageList := []string{}
+	storageList := make(map[string][]string)
 
 	if err != nil {
 		fmt.Printf("Error retrieving File Storage from account: %s\n", err)
@@ -122,7 +127,7 @@ func doListBlockVolumes(sess *slSession.Session) []string {
 
 			if _, ok := notes["cluster"]; ok {
 				clusterID := notes["cluster"].(string)
-				storageList = append(storageList, clusterID)
+				storageList[clusterID] = append(storageList[clusterID], *fileStorage.Username)
 			}
 		}
 	}
