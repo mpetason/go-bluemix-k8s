@@ -70,7 +70,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	validClusters := []string{}
+	validClusters := make(map[string]bool)
 
 	for _, r := range kubernetesRegions {
 		target := v1.ClusterTargetHeader{
@@ -91,7 +91,7 @@ func main() {
 			log.Fatal(err)
 		}
 		for _, c := range out {
-			validClusters = append(validClusters, c.ID)
+			validClusters[c.ID] = true
 		}
 	}
 
@@ -99,14 +99,9 @@ func main() {
 	clusterID := doListBlockVolumes(softlayerSession)
 
 	for cluster, storageID := range clusterID {
-		for _, ID := range validClusters {
-			if cluster == ID {
-				fmt.Println("Valid Cluster:", cluster, storageID)
-			} else {
-				fmt.Println("Invalid Cluster:", cluster, storageID)
-			}
+		if !validClusters[cluster] {
+			fmt.Println("[I]", cluster, storageID)
 		}
-
 	}
 }
 
