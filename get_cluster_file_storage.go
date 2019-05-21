@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
@@ -71,35 +70,43 @@ func main() {
 		log.Fatal(err)
 	}
 
+	validClusters := []string{}
+
+	for _, r := range kubernetesRegions {
+		target := v1.ClusterTargetHeader{
+			OrgID:     myorg.GUID,
+			SpaceID:   myspace.GUID,
+			AccountID: myAccount.GUID,
+			Region:    r,
+		}
+
+		clusterClient, err := v1.New(sess)
+		if err != nil {
+			log.Fatal(err)
+		}
+		clustersAPI := clusterClient.Clusters()
+
+		out, err := clustersAPI.List(target)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, c := range out {
+			validClusters = append(validClusters, c.ID)
+		}
+	}
+
 	softlayerSession := slSession.New(os.Getenv("SL_USERNAME"), os.Getenv("SL_APIKEY"))
 	clusterID := doListBlockVolumes(softlayerSession)
 
 	for cluster, storageID := range clusterID {
-		for _, r := range kubernetesRegions {
-			target := v1.ClusterTargetHeader{
-				OrgID:     myorg.GUID,
-				SpaceID:   myspace.GUID,
-				AccountID: myAccount.GUID,
-				Region:    r,
-			}
-
-			clusterClient, err := v1.New(sess)
-			if err != nil {
-				log.Fatal(err)
-			}
-			clustersAPI := clusterClient.Clusters()
-
-			out, err := clustersAPI.Find(cluster, target)
-			if err != nil {
-				if strings.Contains(err.Error(), "A0006") {
-					fmt.Println("Invalid Cluster:", cluster, "- Storage ID:", storageID)
-				} else {
-					fmt.Println(err)
-				}
+		for _, ID := range validClusters {
+			if cluster == ID {
+				fmt.Println("Valid Cluster:", cluster, storageID)
 			} else {
-				fmt.Println(out)
+				fmt.Println("Invalid Cluster:", cluster, storageID)
 			}
 		}
+
 	}
 }
 
