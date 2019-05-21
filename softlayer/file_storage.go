@@ -14,18 +14,15 @@ func main() {
 
 	//sess.Debug = true
 
-	fmt.Println(doListBlockVolumes(sess))
+	doListBlockVolumes(sess)
 }
 
-func doListBlockVolumes(sess *session.Session) []string {
+func doListBlockVolumes(sess *session.Session) {
 	// Get the Account service for Block Storage
 	service := services.GetAccountService(sess)
 
 	// List Block Storage
 	fileStorage, err := service.Limit(500).GetNetworkStorage()
-
-	// Create slice to return
-	storageList := []string{}
 
 	if err != nil {
 		fmt.Printf("Error retrieving File Storage from account: %s\n", err)
@@ -43,10 +40,7 @@ func doListBlockVolumes(sess *session.Session) []string {
 			if _, ok := notes["cluster"]; ok {
 				counter++
 				fmt.Println(counter, "ID:", *fileStorage.Id, "Name:", *fileStorage.Username, "Cluster", notes["cluster"], "PV:", notes["pv"], "PVC:", notes["pvc"])
-				//clusterID := notes["cluster"].(string)
-				//storageList = append(storageList, clusterID)
 			}
 		}
 	}
-	return storageList
 }
