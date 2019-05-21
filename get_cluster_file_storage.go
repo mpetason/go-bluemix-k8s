@@ -10,6 +10,7 @@ import (
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/session"
+	slSession "github.com/softlayer/softlayer-go/session"
 )
 
 func main() {
@@ -80,7 +81,10 @@ func main() {
 		}
 		clustersAPI := clusterClient.Clusters()
 
-		out, err := clustersAPI.List(target)
+		softlayerSession := slSession.New(os.Getenv("SL_USERNAME"), os.Getenv("SL_APIKEY"))
+		clusterID := doListBlockVolumes(softlayerSession)
+
+		out, err := clustersAPI.Find(clusterID, target)
 		if err != nil {
 			log.Fatal(err)
 		}
