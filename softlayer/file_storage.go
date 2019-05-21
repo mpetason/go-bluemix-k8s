@@ -1,20 +1,21 @@
-package filestorage
+package main
 
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/softlayer/softlayer-go/services"
 	"github.com/softlayer/softlayer-go/session"
 )
 
-// func main() {
-// 	sess := session.New(os.Getenv("SL_USERNAME"), os.Getenv("SL_APIKEY"))
+func main() {
+	sess := session.New(os.Getenv("SL_USERNAME"), os.Getenv("SL_APIKEY"))
 
-// 	//sess.Debug = true
+	//sess.Debug = true
 
-// 	fmt.Println(doListBlockVolumes(sess))
-// }
+	fmt.Println(doListBlockVolumes(sess))
+}
 
 func doListBlockVolumes(sess *session.Session) []string {
 	// Get the Account service for Block Storage
@@ -41,9 +42,9 @@ func doListBlockVolumes(sess *session.Session) []string {
 
 			if _, ok := notes["cluster"]; ok {
 				counter++
-				//			fmt.Println(counter, "ID:", *fileStorage.Id, "Name:", *fileStorage.Username, "Cluster", notes["cluster"], "PV:", notes["pv"], "PVC:", notes["pvc"])
-				clusterID := notes["cluster"].(string)
-				storageList = append(storageList, clusterID)
+				fmt.Println(counter, "ID:", *fileStorage.Id, "Name:", *fileStorage.Username, "Cluster", notes["cluster"], "PV:", notes["pv"], "PVC:", notes["pvc"])
+				//clusterID := notes["cluster"].(string)
+				//storageList = append(storageList, clusterID)
 			}
 		}
 	}

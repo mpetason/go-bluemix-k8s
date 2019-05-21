@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 
@@ -10,6 +12,7 @@ import (
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/mccp/mccpv2"
 	"github.com/IBM-Cloud/bluemix-go/session"
+	"github.com/softlayer/softlayer-go/services"
 	slSession "github.com/softlayer/softlayer-go/session"
 )
 
@@ -67,26 +70,61 @@ func main() {
 		log.Fatal(err)
 	}
 
-	for _, r := range kubernetesRegions {
-		target := v1.ClusterTargetHeader{
-			OrgID:     myorg.GUID,
-			SpaceID:   myspace.GUID,
-			AccountID: myAccount.GUID,
-			Region:    r,
-		}
+	softlayerSession := slSession.New(os.Getenv("SL_USERNAME"), os.Getenv("SL_APIKEY"))
+	clusterID := doListBlockVolumes(softlayerSession)
 
-		clusterClient, err := v1.New(sess)
-		if err != nil {
-			log.Fatal(err)
-		}
-		clustersAPI := clusterClient.Clusters()
+	for _, cluster := range clusterID {
+		for _, r := range kubernetesRegions {
+			target := v1.ClusterTargetHeader{
+				OrgID:     myorg.GUID,
+				SpaceID:   myspace.GUID,
+				AccountID: myAccount.GUID,
+				Region:    r,
+			}
 
-		softlayerSession := slSession.New(os.Getenv("SL_USERNAME"), os.Getenv("SL_APIKEY"))
-		clusterID := doListBlockVolumes(softlayerSession)
+			clusterClient, err := v1.New(sess)
+			if err != nil {
+				log.Fatal(err)
+			}
+			clustersAPI := clusterClient.Clusters()
 
-		out, err := clustersAPI.Find(clusterID, target)
-		if err != nil {
-			log.Fatal(err)
+			out, err := clustersAPI.Find(cluster, target)
+			if err != nil {
+				fmt.Println("Invalid Cluster:", cluster)
+			} else {
+				fmt.Println(out)
+			}
 		}
 	}
+}
+
+func doListBlockVolumes(sess *slSession.Session) []string {
+	// Get the Account service for Block Storage
+	service := services.GetAccountService(sess)
+
+	// List Block Storage
+	fileStorage, err := service.Limit(500).GetNetworkStorage()
+
+	// Create slice to return
+	storageList := []string{}
+
+	if err != nil {
+		fmt.Printf("Error retrieving File Storage from account: %s\n", err)
+	} else {
+		var notes map[string]interface{}
+
+		for _, fileStorage := range fileStorage {
+
+			notes = make(map[string]interface{})
+			if fileStorage.Notes != nil {
+				json.Unmarshal([]byte(*fileStorage.Notes), &notes)
+			}
+
+			if _, ok := notes["cluster"]; ok {
+				clusterID := notes["cluster"].(string)
+				storageList = append(storageList, clusterID)
+			}
+		}
+	}
+	return storageList
 }
