@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/account/accountv2"
@@ -129,7 +130,7 @@ func doListBlockVolumes(sess *slSession.Session) map[string][]string {
 
 			if _, ok := notes["cluster"]; ok {
 				clusterID := notes["cluster"].(string)
-				storageList[clusterID] = append(storageList[clusterID], *fileStorage.Username)
+				storageList[clusterID] = append(storageList[clusterID], strconv.Itoa(*fileStorage.Id))
 			}
 		}
 	}
