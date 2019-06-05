@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/IBM-Cloud/bluemix-go"
 
@@ -101,8 +102,7 @@ func main() {
 		}
 
 		for _, c := range out {
-			allClusters[c.OwnerEmail] = append(allClusters[c.OwnerEmail], c.Name)
-			//	fmt.Println(clusterCount, "[", c.DataCenter, "]", "[", c.OwnerEmail, "]", "[", c.Name, "]")
+			allClusters[strings.ToLower(c.OwnerEmail)] = append(allClusters[c.OwnerEmail], c.Name)
 		}
 	}
 
