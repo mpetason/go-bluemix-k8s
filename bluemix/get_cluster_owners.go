@@ -102,7 +102,7 @@ func main() {
 		}
 
 		for _, c := range out {
-			allClusters[strings.ToLower(c.OwnerEmail)] = append(allClusters[c.OwnerEmail], c.Name)
+			allClusters[strings.ToLower(c.OwnerEmail)] = append(allClusters[strings.ToLower(c.OwnerEmail)], c.Name)
 		}
 	}
 
@@ -112,7 +112,12 @@ func main() {
 	}
 	sort.Strings(keys)
 
+	totalClusters := 0
+
 	for _, k := range keys {
+		totalClusters += len(allClusters[k])
 		fmt.Println("[", len(allClusters[k]), "]", "[", k, "]", allClusters[k])
 	}
+
+	fmt.Println("[", "Total Clusters", "]", "[", totalClusters, "]")
 }
