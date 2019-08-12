@@ -26,6 +26,9 @@ func main() {
 	var space string
 	flag.StringVar(&space, "space", "", "Bluemix Space")
 
+	var output string
+	flag.StringVar(&output, "output", "", "Output Formatting")
+
 	flag.Parse()
 
 	kubernetesRegions := []string{"au-syd", "eu-de", "eu-gb", "us-east", "us-south"}
@@ -99,11 +102,23 @@ func main() {
 	softlayerSession := slSession.New(os.Getenv("SL_USERNAME"), os.Getenv("SL_APIKEY"))
 	clusterID := doListBlockVolumes(softlayerSession)
 
+	var volumeList []string
 	for cluster, storageID := range clusterID {
 		if !validClusters[cluster] {
-			fmt.Println("[I]", cluster, storageID)
+			if output == "long" {
+				fmt.Println("[I]", cluster, storageID)
+			}
+			for _, ids := range storageID {
+				volumeList = append(volumeList, ids)
+			}
 		}
 	}
+	if output == "short" {
+		for _, volumeID := range volumeList {
+			fmt.Println(volumeID)
+		}
+	}
+
 }
 
 func doListBlockVolumes(sess *slSession.Session) map[string][]string {
